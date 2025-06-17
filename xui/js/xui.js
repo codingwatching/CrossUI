@@ -1541,20 +1541,20 @@ xui.merge(xui,{
         // get : crossdomain => JSONP, else Ajax
         : xui.absIO.isCrossDomain(uri) ? xui.JSONP : xui.Ajax;
     },
-    request:function(uri, query, onSuccess, onFail, threadid, options){
-        return xui._getrpc(uri, query, options).apply(null, arguments).start();
+    request:function(uri, query, onSuccess, onFail, threadid, options, t){
+        return (t=xui._getrpc(uri, query, options)).apply(t, arguments).start();
     },
     ajax:function(uri, query, onSuccess, onFail, threadid, options){
-        return xui.Ajax.apply(null, arguments).start();
+        return xui.Ajax.apply(xui.Ajax, arguments).start();
     },
     jsonp:function(uri, query, onSuccess, onFail, threadid, options){
-        return xui.JSONP.apply(null, arguments).start();
+        return xui.JSONP.apply(xui.JSONP, arguments).start();
     },
     xdmi:function(uri, query, onSuccess, onFail, threadid, options){
-        return xui.XDMI.apply(null, arguments).start();
+        return xui.XDMI.apply(xui.XDMI, arguments).start();
     },
     fetch:function(uri, query, onSuccess, onFail, threadid, options){
-        return xui.Fetch.apply(null, arguments).start();
+        return xui.Fetch.apply(xui.Fetch, arguments).start();
     },
     restGet:function(uri, query, onSuccess, onFail, threadid,options){
         if(!options) options={};options.method="get";
@@ -1968,7 +1968,8 @@ xui.merge(xui,{
     echo:xui.fun(),
     message:xui.fun(),
     getErrMsg:function(e,split){
-        return (e && (e.stack || /*old opera*/ e.stacktrace || ( /*IE11*/ console && console.trace ? console.trace() : null) ||e.description||e.message||e.toString())).replace(/\n/g, split||"<br />");
+        return (e instanceof Event ? (e && (e.stack || /*old opera*/ e.stacktrace || ( /*IE11*/ console && console.trace ? console.trace() : null) ||e.description||e.message||e.toString())) : xui.isHash(e) ? JSON.stringify(e,null,4): (""+e))
+            .replace(/\n/g, split||"<br />");
     },
     //profile object cache
     _pool:[],
@@ -2002,6 +2003,7 @@ xui.merge(xui,{
         do{p=pool[i++]}while(i<l && (p&&p.firstChild))
         if(!p || p.firstChild){
             p=document.createElement('div');
+            p.style.display = 'none';
             p.id=xui._ghostDivId;
             pool.push(p);
         }
@@ -3662,7 +3664,7 @@ xui.Class('xui.absIO',null,{
             data : options.data||options.body||'',
             contentType : options.contentType||'',
             Accept : options.Accept||'',
-            headers : options.headers||options.header||null,
+            headers : xui.merge(me.global_header||{}, options.headers||options.header||{}, 'all'),
             asy : options.asy!==false,
             scriptType: options.scriptType
         },'all');
@@ -3725,6 +3727,7 @@ xui.Class('xui.absIO',null,{
                 xui.Thread.resume(self.threadid);
                 xui.tryF(self.$onEnd,[],self);
                 xui.tryF(self.onEnd,[],self);
+                xui.tryF(self.constructor.onEnd,[],self);
                 self._clear();
             }
         },
@@ -3732,13 +3735,15 @@ xui.Class('xui.absIO',null,{
             var self=this;
             self._status = "started";
             xui.Thread.suspend(self.threadid);
+            xui.tryF(self.constructor.onStart,[],self);
             xui.tryF(self.$onStart,[],self);
             xui.tryF(self.onStart,[],self);
         },
         _onResponse:function(){
-            var self=this;
-            if(false!==xui.tryF(self.beforeSuccess,[self._response, self.rspType, self.threadid], self))
-                xui.tryF(self.onSuccess,[self._response, self.rspType, self.threadid], self);
+            var self=this,a=[self._response, self.rspType, self.threadid];
+            if(false!==xui.tryF(self.constructor.beforeSuccess,a, self))
+                if(false!==xui.tryF(self.beforeSuccess,a, self))
+                    xui.tryF(self.onSuccess,a, self);
             self._onEnd();
         },
         _handleTimeout:function(){
@@ -3763,9 +3768,10 @@ xui.Class('xui.absIO',null,{
             self._flag = xui.asyRun(tryTimeout, self.timeout);
         },
         _onError:function(e, status, statusText, response){
-            var self=this;
-            if(false!==xui.tryF(self.beforeFail,[e, self.threadid, status, statusText, response],self))
-                xui.tryF(self.onFail,[e, self.rspType, self.threadid, status, statusText, response], self);
+            var self=this, a = [e, self.rspType, self.threadid, status, statusText, response];
+            if(false!==xui.tryF(self.constructor.beforeFail,a,self))
+                if(false!==xui.tryF(self.beforeFail, a ,self))
+                    xui.tryF(self.onFail, a, self);
             self._onEnd();
         },
         getStatus:function(){
@@ -3888,7 +3894,7 @@ xui.Class('xui.Fetch','xui.absIO',{
                 if(!xui.isEmpty(self.data)){
                   if(self.reqType=="json"){
                     self.body = JSON.stringify(self.data);
-                    xui.set(self,['headers','Content-type', '"application/json']);
+                    xui.set(self,['headers','Content-type', 'application/json']);
                   }
                   // others form data
                   else{

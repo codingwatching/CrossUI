@@ -1982,7 +1982,8 @@ xui.merge(xui,{
     echo:xui.fun(),
     message:xui.fun(),
     getErrMsg:function(e,split){
-        return (e && (e.stack || /*old opera*/ e.stacktrace || ( /*IE11*/ console && console.trace ? console.trace() : null) ||e.description||e.message||e.toString())).replace(/\n/g, split||"<br />");
+        return (e instanceof Event ? (e && (e.stack || /*old opera*/ e.stacktrace || ( /*IE11*/ console && console.trace ? console.trace() : null) ||e.description||e.message||e.toString())) : xui.isHash(e) ? JSON.stringify(e,null,4): (""+e))
+            .replace(/\n/g, split||"<br />");
     },
     //profile object cache
     _pool:[],
@@ -2494,7 +2495,7 @@ new function(){
                     'constant':xui.constant,
                     'global':xui.$cache.data,
                     // special functions
-                    getCookies:xui.Cookies.get,
+                    getCookies:xui.Cookies&&xui.Cookies.get||function(){},
                     getFI:function(key){var h=xui.getUrlParams();return h&&h[key]}
                 };
         },
@@ -12260,8 +12261,8 @@ xui.Class('xui.Dom','xui.absBox',{
         tagClass:function(tag, isAdd){
             var self=this,
                 me=arguments.callee,
-                r1=me["_r1_"+tag]||(me["_r1_"+tag]=new RegExp("xui[-\\w]+" + tag + "[-\\w]*")),
-                r2=me["_r2"]||(me["_r2"]=/\b(xui[-\w]+)\b/g);
+                r1=me["_r1_"+tag]||(me["_r1_"+tag]=new RegExp("^xui(-[\\w]+)+" + tag + "(-[\\w]+)*$")),
+                r2=me["_r2"]||(me["_r2"]=/\b(xui(-[\w]+)+)\b/g);
             self.removeClass(r1);
             isAdd=false!==isAdd;
             var r= isAdd ? self.replaceClass(r2, '$1 $1' + tag) : self;
@@ -14678,7 +14679,7 @@ xui.Class('xui.Dom','xui.absBox',{
                 o1,o2;
 
             if((o1=xui(id)).isEmpty()){
-                xui('body').prepend(o1=xui.create('<button id="'+ id +'" class="xui-node xui-node-div xui-cover xui-busy-cover xui-cover-global xui-custom" style="position:absolute;display:none;text-align:center;left:0;top:0;border:0;padding:0;margin:0;padding-top:2em;"><div id="'+id2+'" class="xui-node xui-node-div xui-coverlabel xui-custom"></div></button>'));
+                xui('body').prepend(o1=xui.create('<button id="'+ id +'" class="xui-node xui-node-div xui-cover xui-cover-global xui-custom" style="position:absolute;display:none;text-align:center;left:0;top:0;border:0;padding:0;margin:0;padding-top:2em;"><div id="'+id2+'" class="xui-node xui-node-div xui-coverlabel xui-custom"></div></button>'));
                 o1.setSelectable(false);
                 xui.setNodeData(o1.get(0),'zIndexIgnore',1);
             }
@@ -74284,7 +74285,7 @@ xui.Class("xui.svg.group", "xui.svg.absComb",{
             // remove embedded ui
             if(prf.children){
                 xui.arr.each(prf.children,function(v){
-                    v[1].destroy();
+                    v[0].destroy();
                 });
             }
             // must purge lazy-bound node here
@@ -75082,7 +75083,7 @@ xui.Class("xui.svg.group", "xui.svg.absComb",{
                 for(var col=0,n=colSize;col<n;col++){
                     var chr = xui.ExcelFormula.toColumnChr(col+1);
                     if(t = xui.get(layoutData, ['colSetting', chr,'width'])){
-                        fix += t;
+                        fix += parseInt(t, 10)|| 0;
                         reCalculated.push(t);
                     }else{
                         count++;

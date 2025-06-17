@@ -47,7 +47,8 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
                 }
                 layoutData.cells = cells;
                 prf.properties.layoutData = layoutData;
-                prf.box._rerender(prf, true);
+                if(prf.renderId)
+                    prf.box._rerender(prf, true);
             });
         }
     },
@@ -396,13 +397,15 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
             // remove embedded ui
             if(prf.children){
                 xui.arr.each(prf.children,function(v){
-                    v[1].destroy();
+                    v[0].boxing().destroy();
                 });
             }
             // must purge lazy-bound node here
             var t, node=prf.getSubNode("BOX").get(0);
-            if(node)
+            if(node){
                 xui.$purgeChildren(node);
+                prf.clearCache();
+            }
 
             // for design mode
             if(t=prf.$htable){
@@ -607,11 +610,7 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
                                           +'>' + ins.getCaption();
                             }else{
                                 data.value = ins.getShowValue?ins.getShowValue():
-                                    ins.getValue?('$UIvalue' in childPrf.properties?ins.getUIValue():ins.getValue()):
-                                    ins.getCaption?ins.getCaption():
-                                    ins.getHtml?ins.getHtml():
-                                    ins.getLabel?ins.getLabel():
-                                '';
+                                    ins.getValue?('$UIvalue' in childPrf.properties?ins.getUIValue():ins.getValue()):'';
                             }
                         }
                     }
@@ -1194,7 +1193,7 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
                 for(var col=0,n=colSize;col<n;col++){
                     var chr = xui.ExcelFormula.toColumnChr(col+1);
                     if(t = xui.get(layoutData, ['colSetting', chr,'width'])){
-                        fix += t;
+                        fix += parseInt(t, 10) || 0;
                         reCalculated.push(t);
                     }else{
                         count++;
@@ -1332,6 +1331,7 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
             t.updateSettings(opt);
         },
         $beforeAppend:function(prf,target,subId){
+            /*
             if(!subId)return false;
             // only one allowed
             if(target.size()==1){
@@ -1341,6 +1341,7 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
                     }
                 }, true);
             }
+            */
         },
         $afterAppend:function(prf, target,subId){
             if(!subId)return;
@@ -1351,24 +1352,25 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
                     var cell = prf.getSubNode("TD", item._serialId),
                         isFormField = inputPrf.box._isFormField ? inputPrf.box._isFormField(inputPrf) : !!xui.get(inputPrf,['properties','isFormField']),
                         mode = prf.boxing().getMode(),
-                        show = mode!='read' || target['xui.UI.RichEditor'];
+                        show = mode!='read' || target['xui.UI.RichEditor'] || !isFormField;
                     if(isFormField && (!iProp.name || prf.ItemIdMapSubSerialId[iProp.name])){
                         iProp.name = item.id;
                     }
-                    // for form field only
                     // onsize for dom must here
                     if(cell && cell.get(0)){
                         // if parent is re-rendered
                         if(inputPrf._cellresizeP!=cell){
-                            var adjustSize = function(){
-                                    if(!cell.get(0))return;
-                                    target.setPosition('absolute').setLeft(0).setTop(0);
-                                    // first row/col , 2 pix border
-                                    if(target.setWidth)target.setWidth(cell.offsetWidth()-(item.col?1:2));
-                                    if(target.setHeight)target.setHeight(cell.offsetHeight()-(item.row?1:2));
-                                };
-                            adjustSize();
-                            cell.onSize(adjustSize,'cellresize');
+                            if(!iProp.tagVar._autonomy){
+                                var adjustSize = function(){
+                                        if(!cell.get(0))return;
+                                        target.setPosition('absolute').setLeft(0).setTop(0);
+                                        // first row/col , 2 pix border
+                                        if(target.setWidth)target.setWidth(cell.offsetWidth()-(item.col?1:2));
+                                        if(target.setHeight)target.setHeight(cell.offsetHeight()-(item.row?1:2));
+                                    };
+                                adjustSize();
+                                cell.onSize(adjustSize,'cellresize');
+                            }
                             inputPrf._cellresizeP=cell;
                         }
                     }
@@ -1378,49 +1380,47 @@ xui.Class("xui.UI.FormLayout",["xui.UI"],{
                         inputPrf._attached2cell = 1;
                         // for form field only
                         // prop and autoexpand
-                        if(isFormField){
-                            if(show){
-                                inputPrf.locked = 1;
-                                inputPrf.boxing().setDisplay('');
-                                if(target.setLabelPos)  target.setLabelPos('none').setLabelCaption('').setLabelSize('0');
-                                if(target.setVAlign)  target.setVAlign('middle');
+                        if(show){
+                            inputPrf.locked = 1;
+                            inputPrf.boxing().setDisplay('');
+                            if(target.setLabelPos)  target.setLabelPos('none').setLabelCaption('').setLabelSize('0');
+                            if(target.setVAlign)  target.setVAlign('middle');
 
-                                if(target['xui.UI.Input']
-                                    && target.getMultiLines && target.getMultiLines()
-                                    && target.setAutoexpand
-                                ){
-                                    // use the hidden one: _autoexpand
-                                    // once: set minH from subId
-                                    if(!parseFloat(inputPrf._autoexpand)){
-                                        // need set autoexpand in afterRowResize too
-                                        inputPrf._autoexpand = (cell.offsetHeight()-1)+"px";
-                                        inputPrf.getSubNode("INPUT").addClass("autoexpand");
-                                        inputPrf.$beforeAutoexpand=function(p,h){
-                                            h=target.getAutoexpandHeight();
-                                            item._child_autoexpandH = h;
-                                            if(prf.boxing()._isDesignMode()){
-                                                // ensure to trigger table render once
-                                                xui.resetRun(prf.getUid("autoex"), function(){
-                                                    if(prf.$htable)prf.$htable.render();
-                                                });
-                                            }else{
-                                                cell.height(h);
-                                            }
-                                            // adjust custom borders
-                                            if(!prf.boxing()._isDesignMode())
-                                                prf.box._setCustomBorders(prf);
-                                            return false;
-                                        };
-                                        // try to trigger aoutoexpand
-                                        inputPrf.box._checkAutoexpand(inputPrf);
-                                    }
+                            if(target['xui.UI.Input']
+                                && target.getMultiLines && target.getMultiLines()
+                                && target.setAutoexpand
+                            ){
+                                // use the hidden one: _autoexpand
+                                // once: set minH from subId
+                                if(!parseFloat(inputPrf._autoexpand)){
+                                    // need set autoexpand in afterRowResize too
+                                    inputPrf._autoexpand = (cell.offsetHeight()-1)+"px";
+                                    inputPrf.getSubNode("INPUT").addClass("autoexpand");
+                                    inputPrf.$beforeAutoexpand=function(p,h){
+                                        h=target.getAutoexpandHeight();
+                                        item._child_autoexpandH = h;
+                                        if(prf.boxing()._isDesignMode()){
+                                            // ensure to trigger table render once
+                                            xui.resetRun(prf.getUid("autoex"), function(){
+                                                if(prf.$htable)prf.$htable.render();
+                                            });
+                                        }else{
+                                            cell.height(h);
+                                        }
+                                        // adjust custom borders
+                                        if(!prf.boxing()._isDesignMode())
+                                            prf.box._setCustomBorders(prf);
+                                        return false;
+                                    };
+                                    // try to trigger aoutoexpand
+                                    inputPrf.box._checkAutoexpand(inputPrf);
                                 }
-                                if(mode=='read'){
-                                    if(target.setReadonly)target.setReadonly(true,true);
-                                }
-                            }else{
-                                inputPrf.boxing().setDisplay('none');
                             }
+                            if(mode=='read'){
+                                if(target.setReadonly)target.setReadonly(true,true);
+                            }
+                        }else{
+                            inputPrf.boxing().setDisplay('none');
                         }
                         inputPrf.$handleCustomVars=function(d){
                             if(d){
