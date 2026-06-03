@@ -3,11 +3,22 @@
 CrossUI is a free Cross-Browser Javascript framework with cutting-edge functionality for SPA(Single Page Application) web application.
 
 <strong>Compatible with older browsers, even IE6</strong>
+
+
 ## 🚀 NEW · CrossUI Studio — a visual editor for your **real** React code
 
 > **[CrossUI Studio](https://studio.crossui.com)** is a visual editor for React + MUI that edits your actual source — not a copy, not a proprietary document. Every visual change is a single atomic write to one node in your React AST, so **changing one prop produces a one-line git diff**. Your hooks, custom logic, comments, and formatting come out byte-identical.
 
-[![Open CrossUI Studio](https://studio.crossui.com/docs/images/studio.png)](https://studio.crossui.com)
+### ▶️ Watch the 90-second walkthrough
+
+[![Watch CrossUI Studio in action](<REPLACE_WITH_POSTER>)](https://studio.crossui.com/docs/videos/SCD.mp4)
+
+> 🎬 **[Play the demo →](https://studio.crossui.com/docs/videos/SCD.mp4)**
+
+<!-- ── 备选：若想内嵌播放器，删掉上面两行，改用下面的 <video> 标签。 ──
+     注意 GitHub 可能会过滤外链 <video>；如不显示就退回封面图方案。
+<video src="https://studio.crossui.com/docs/videos/SCD.mp4" controls width="100%" poster="<REPLACE_WITH_POSTER>"></video>
+-->
 
 **Why it's different**
 
