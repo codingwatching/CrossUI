@@ -11,13 +11,8 @@ CrossUI is a free Cross-Browser Javascript framework with cutting-edge functiona
 
 ### ▶️ Watch the 90-second walkthrough
 
-[![Watch CrossUI Studio in action](<REPLACE_WITH_POSTER>)](https://studio.crossui.com/docs/videos/SCD.mp4)
+[![Watch CrossUI Studio in action](https://studio.crossui.com/docs/images/studio.png)](https://studio.crossui.com/docs/videos/SCD.mp4)
 
-> 🎬 **[Play the demo →](https://studio.crossui.com/docs/videos/SCD.mp4)**
-
- 
-<video src="https://studio.crossui.com/docs/videos/SCD.mp4" controls width="100%" poster="<REPLACE_WITH_POSTER>"></video>
- 
 
 **Why it's different**
 
