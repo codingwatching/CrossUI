@@ -15,10 +15,9 @@ CrossUI is a free Cross-Browser Javascript framework with cutting-edge functiona
 
 > 🎬 **[Play the demo →](https://studio.crossui.com/docs/videos/SCD.mp4)**
 
-<!-- ── 备选：若想内嵌播放器，删掉上面两行，改用下面的 <video> 标签。 ──
-     注意 GitHub 可能会过滤外链 <video>；如不显示就退回封面图方案。
+ 
 <video src="https://studio.crossui.com/docs/videos/SCD.mp4" controls width="100%" poster="<REPLACE_WITH_POSTER>"></video>
--->
+ 
 
 **Why it's different**
 
