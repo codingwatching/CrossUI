@@ -3,6 +3,26 @@
 CrossUI is a free Cross-Browser Javascript framework with cutting-edge functionality for SPA(Single Page Application) web application.
 
 <strong>Compatible with older browsers, even IE6</strong>
+## 🚀 NEW · CrossUI Studio — a visual editor for your **real** React code
+
+> **[CrossUI Studio](https://studio.crossui.com)** is a visual editor for React + MUI that edits your actual source — not a copy, not a proprietary document. Every visual change is a single atomic write to one node in your React AST, so **changing one prop produces a one-line git diff**. Your hooks, custom logic, comments, and formatting come out byte-identical.
+
+[![Open CrossUI Studio](https://studio.crossui.com/docs/images/studio.png)](https://studio.crossui.com)
+
+**Why it's different**
+
+- **Clean diffs.** Touch a `variant` on the canvas → exactly one line changes in your file. The lines above and below stay byte-for-byte identical — diffs your team can actually review.
+- **No lock-in.** No proprietary runtime, no codegen, no SDK. Your React *is* the source of truth; the canvas is just a view over the AST. Delete Studio tomorrow and your repo still builds with `npm install && npm run build`.
+- **Works on your real Git.** GitHub · GitLab · Bitbucket · Azure · Gitea · Forgejo (self-hosted included). React 18 / 19 / Canary · MUI v7 · shadcn.
+- **Deep-layer editing.** Drill *past* the outermost render — into a `.map()` iteration, a ternary branch, or a node passed as `children` — and design it in isolation. Studio synthesizes type-correct mock data so the node renders even without its parent's runtime context, then writes edits back to the original AST position.
+- **🆕 Import Graph (v0.9.5).** Set any file as the entry and draw its full dependency map. Circular dependencies show in **red**, and because it's built from static AST analysis the graph **renders even when the component itself crashes** — so it doubles as a debugging tool exactly when you're stuck.
+
+**Free** to use the full editor on an in-browser virtual repo · real Git mounts are Pro.
+
+👉 **Try it now: <https://studio.crossui.com>**
+
+---
+
 
 ## Features & Resources
 
