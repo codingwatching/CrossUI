@@ -79,3 +79,6 @@ These tools (without coding) can reduce development time significantly:
 * Examples: https://www.crossui.com/examples.html
 * Tutorials: https://www.crossui.com/tutorials.html
 * Desktop versions: https://www.crossui.com/download.html
+
+## Blog
+* https://blog.crossui.com
